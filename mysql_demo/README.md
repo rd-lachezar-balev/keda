@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-### Installed minikube which is currently active context for kubectl
+### Installed minikube (with metrics-server addon) which is currently active context for kubectl
 ### Installed helm `brew install helm`
 ### Installed [KEDA with helm](https://keda.sh/docs/2.14/deploy/#helm)
 
