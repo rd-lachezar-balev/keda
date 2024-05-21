@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secrets
+  namespace: app
+type: Opaque
+data:
+  mysql_conn_str: cm9vdDp0b3BzZWNyZXRAdGNwKG15c3FsLXNlcnZpY2UubXlzcWw6MzMwNikvdGVzdA== # root:topsecret@tcp(mysql-service.mysql:3306)/test
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-trigger-auth-mysql-secret
+  namespace: app
+spec:
+  secretTargetRef:
+    - parameter: connectionString
+      name: mysql-secrets
+      key: mysql_conn_str
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: mysql-scaledobject
+  namespace: app
+spec:
+  scaleTargetRef:
+    apiVersion: "apps/v1"
+    kind: "Deployment"
+    name: "busybox"
+  pollingInterval: 15
+  cooldownPeriod: 15
+  idleReplicaCount: 0
+  minReplicaCount: 0
+  maxReplicaCount: 5
+  triggers:
+    - type: mysql
+      metadata:
+        queryValue: "15"
+        activationQueryValue: "10"
+        query: "select num from test"
+      authenticationRef:
+        name: keda-trigger-auth-mysql-secret
+      metricType: AverageValue
